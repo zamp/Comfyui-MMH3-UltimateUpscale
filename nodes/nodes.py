@@ -673,7 +673,10 @@ def sample_piece(piece, cond, model, noise, sampler, sigmas, negative, cfg):
         denoise_mask=noise_mask, callback=callback,
         disable_pbar=disable_pbar, seed=noise.seed,
     )
-    samples = samples.to(comfy.model_management.intermediate_device())
+    # Stitching/brightness matching must use the input tile's device.
+    # With --gpu-only, intermediate_device() is CUDA while the model-based
+    # latent upscaler deliberately returns CPU tensors.
+    samples = samples.to(latent_image.tensors[0].device)
     return samples
 
 
